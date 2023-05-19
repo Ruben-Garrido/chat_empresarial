@@ -3,10 +3,7 @@ package controller;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Scanner;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,8 +13,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-
-
 import java.util.ArrayList;
 import java.util.List;
 import javafx.application.Platform;
@@ -50,16 +45,16 @@ public class SalaChatControlador  {
     }
 
     
-    
+    // Metodo que manda el mensaje escrito por el usuario al servidor 
     public void EnviarMensaje(ActionEvent event) {
-        String mensaje = txtEscribirMensajes.getText();
-        writer.println(nombreUsuario + ": " + mensaje);
-        txtEscribirMensajes.clear();
+        String mensaje = txtEscribirMensajes.getText();// atrapa el mensaje
+        writer.println(nombreUsuario + ": " + mensaje);// Envia
+        txtEscribirMensajes.clear();// limpia la caja de mensajes
         // mostrar en la propia pantalla
         txtMostrarChat.appendText(nombreUsuario+": "+mensaje+"\n");
     }
 
-    
+    // metodo que recibe el mensaje del servidor
     public void recibirMensaje() {
         try {
             Scanner scanner = new Scanner(socket.getInputStream());
@@ -67,7 +62,7 @@ public class SalaChatControlador  {
             while (scanner.hasNextLine()) {
                 String mensaje = scanner.nextLine();
                 String[] partes = mensaje.split(":", 2); // Divide en 2 partes usando ":" como separador
-                String nombreUsuario = partes[0];
+                String nombreUsuario = partes[0];        // Separa el nombre de usuario del mensaje 
                 String mensajeUsuario = partes[1];
                 
                 Platform.runLater(() -> {

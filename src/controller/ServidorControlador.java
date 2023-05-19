@@ -48,23 +48,26 @@ public class ServidorControlador {
     private Scanner scanner;
 
     public void initialize() {
-        Thread hiloServidor = new Thread(this::startServer);
+        Thread hiloServidor = new Thread(this::startServer);// hace posible la conexion
         hiloServidor.start();
     }
 
     private void startServer() {
         try (ServerSocket serverSocket = new ServerSocket(8000)) {
-            appendMessage("Servidor escuchando en el puerto 8000");
-
+            mostrarMensaje("Servidor escuchando en el puerto 8000");
+            
             while (true) {
                 Socket clienteSocket = serverSocket.accept();
-                appendMessage("Cliente conectado: " + clienteSocket.getInetAddress());
+                mostrarMensaje("Cliente conectado: " + clienteSocket.getInetAddress().getHostAddress());
 
                 PrintWriter writer = new PrintWriter(clienteSocket.getOutputStream(), true);
                 guardarClientes.add(writer);
 
-                executorService.execute(new ClientHandler(clienteSocket, writer));
+                ClientHandler clientHandler = new ClientHandler(clienteSocket, writer);
+                executorService.execute(clientHandler);
             }
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }finally {
@@ -72,18 +75,26 @@ public class ServidorControlador {
 		}
     }
 
-    private void appendMessage(String message) {
-        txtMostrarChat.appendText(message + "\n");
+    private void mostrarMensaje(String mensaje) {
+        txtMostrarChat.appendText(mensaje + "\n");
     }
 
-    private void broadcastMessage(String message) {
-        // Llamar a SalaChatControlador.recibirNuevoMensaje() para que todas las instancias muestren el nuevo mensaje
-        //SalaChatControlador.recibirNuevoMensaje(message);
-          //reenvia a todos los conectados 
-        for (PrintWriter writer : guardarClientes) {
-            writer.println(message);
+    
+    private void reenviarMensaje(PrintWriter writer, String mensaje) {
+        // Reenviar a todos los conectados
+        for (PrintWriter clientWriter : guardarClientes) {
+            if (clientWriter != writer) {
+                clientWriter.println(mensaje);
+            }
         }
     }
+
+//    private void reenviarMensaje(String mensaje) {
+//               //reenvia a todos los conectados 
+//        for (PrintWriter writer : guardarClientes) {
+//            writer.println(mensaje);
+//        }
+//    }
 
     private class ClientHandler implements Runnable {
         private Socket clientSocket;
@@ -99,15 +110,16 @@ public class ServidorControlador {
             try {
                 Scanner scanner = new Scanner(clientSocket.getInputStream());
 
-                String message;
+                String mensaje;
                 while (scanner.hasNextLine()) {
-                    message = scanner.nextLine();
-                    appendMessage(message);
-                    broadcastMessage(message);
+                    mensaje = scanner.nextLine();
+                    mostrarMensaje(mensaje);
+                    reenviarMensaje(writer, mensaje);
+
                 }
 
                 clientSocket.close();
-                //appendMessage("desconetado cliente"+writer);
+                mostrarMensaje("desconetado cliente");
                 guardarClientes.remove(writer);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -118,75 +130,5 @@ public class ServidorControlador {
 }
 
 
-//public class ServidorControlador {
-//
-//    @FXML
-//    private TextArea txtMostrarChat;
-//
-//    private List<PrintWriter> escribirClientes = new ArrayList<>();
-//
-//    public void initialize() {
-//        Thread hiloServidor = new Thread(this::startServer);
-//        hiloServidor.start();
-//    }
-//
-//    private void startServer() {
-//        try (ServerSocket serverSocket = new ServerSocket(8000)) {
-//            appendMessage("Servidor escuchando en el puerto 8000");
-//
-//            while (true) {
-//                Socket clienteSocket = serverSocket.accept();
-//                appendMessage("Cliente conectado: " + clienteSocket.getInetAddress());
-//
-//                PrintWriter writer = new PrintWriter(clienteSocket.getOutputStream(), true);
-//                escribirClientes.add(writer);
-//
-//                Thread clientThread = new Thread(new ClientHandler(clienteSocket, writer));
-//                clientThread.start();
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    private void appendMessage(String message) {
-//        txtMostrarChat.appendText(message + "\n");
-//    }
-//
-//    private void broadcastMessage(String message) {
-//        for (PrintWriter writer : escribirClientes) {
-//            writer.println(message);
-//        }
-//    }
-//
-//    private class ClientHandler implements Runnable {
-//        private Socket clientSocket;
-//        private PrintWriter writer;
-//
-//        public ClientHandler(Socket clientSocket, PrintWriter writer) {
-//            this.clientSocket = clientSocket;
-//            this.writer = writer;
-//        }
-//
-//        @Override
-//        public void run() {
-//            try {
-//                Scanner scanner = new Scanner(clientSocket.getInputStream());
-//
-//                String message;
-//                while (scanner.hasNextLine()) {
-//                    message = scanner.nextLine();
-//                    appendMessage("Received from client: " + message);
-//                    broadcastMessage(message);
-//                }
-//
-//                clientSocket.close();
-//                escribirClientes.remove(writer);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-//}
 
 

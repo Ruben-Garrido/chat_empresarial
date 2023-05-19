@@ -80,9 +80,9 @@ public class LoginControlador  {
 	    }
 	    
 	    private void conectar() {
-	// TODO Auto-generated method st
+	// TODO Auto-generated method st  192.168.199.34
 	    	try {
-	            socket = new Socket("192.168.199.34", 8000);
+	            socket = new Socket("localHost", 8000);
 	            escribir = new PrintWriter(socket.getOutputStream(), true);
 
 	            Thread hiloConectar = new Thread();
