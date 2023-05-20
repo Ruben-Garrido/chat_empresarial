@@ -18,7 +18,7 @@ public class ControlLogica {
 		
 		usuarios=archivo.cargarUsuarios();
 		
-		Usuario usuario= new Usuario(nombre, apellido,cedula, programa, clave);
+		Usuario usuario= new Usuario(nombre);
 		System.out.println("usuarios: "+usuario.toString());
 
 		usuarios.add(usuario);
@@ -40,10 +40,9 @@ public class ControlLogica {
 	private static void consultarUsuarios() {
 		usuarios=archivo.cargarUsuarios();
 		for (Usuario usuarios : usuarios) {
-			System.out.println("Cedula: "+usuarios.getCedula());
+			
 			System.out.println("Nombre: "+usuarios.getNombre());
-			System.out.println("Programa: "+usuarios.getPrograma());
-			System.out.println("Clave: "+usuarios.getClave());
+			
 			System.out.println("--------------------------");
 		}
 	}

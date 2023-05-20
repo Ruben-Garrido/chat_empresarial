@@ -1,7 +1,10 @@
 package controller;
 
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -9,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observer;
 import java.util.Scanner;
+import java.util.Vector;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 
@@ -23,7 +28,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-
 
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
@@ -37,15 +41,17 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import logica.Usuario;
 
 public class ServidorControlador {
 
     @FXML
     private TextArea txtMostrarChat;
 
-    private List<PrintWriter> guardarClientes = new ArrayList<>();
+    private List<String> guardarUsuarios = new ArrayList<>();
     private ExecutorService executorService = Executors.newCachedThreadPool();
     private Scanner scanner;
+    Usuario usuario = new Usuario();
 
     public void initialize() {
         Thread hiloServidor = new Thread(this::startServer);// hace posible la conexion
@@ -58,13 +64,27 @@ public class ServidorControlador {
             
             while (true) {
                 Socket clienteSocket = serverSocket.accept();
-                mostrarMensaje("Cliente conectado: " + clienteSocket.getInetAddress().getHostAddress());
-
-                PrintWriter writer = new PrintWriter(clienteSocket.getOutputStream(), true);
-                guardarClientes.add(writer);
-                System.out.println("Se guardo el cliente");
+                //mostrarMensaje("Cliente conectado: " + clienteSocket.getInetAddress().getHostAddress());
                 
-                ClientHandler clientHandler = new ClientHandler(clienteSocket, writer);
+                String nombreUsuario = clienteSocket.getInetAddress().getHostAddress();
+                guardarUsuarios.add(nombreUsuario);
+                System.out.println("Usuario conectado: " + nombreUsuario);
+                
+                // no logro que se guarde el nombre del usuario creo que se debe implementar el hilo
+                System.out.println("Se guardo el cliente");
+                for (String usuario : guardarUsuarios) {
+                    System.out.println("Usuario: " + usuario);
+                }
+
+                
+             
+                    
+
+ 
+
+                
+                
+                ClientHandler clientHandler = new ClientHandler(clienteSocket, nombreUsuario);
                 executorService.execute(clientHandler);
             }
 
@@ -81,33 +101,36 @@ public class ServidorControlador {
     }
 
     
-    private void reenviarMensaje(PrintWriter writer, String mensaje) {
+    private void reenviarMensaje(String writer, String mensaje) {
         // Reenviar a todos los conectados
-        for (PrintWriter clientWriter : guardarClientes) {
-            if (clientWriter != writer) {
-                clientWriter.println(mensaje);
-            }
-        }
+//        for (PrintWriter clientWriter : guardarUsuarios) {
+//            if (clientWriter != writer) {
+//                clientWriter.println(mensaje);
+//            }
+//        }
     }
 
-//    private void reenviarMensaje(String mensaje) {
-//               //reenvia a todos los conectados 
-//        for (PrintWriter writer : guardarClientes) {
-//            writer.println(mensaje);
-//        }
-//    }
+//----------------------hilo-------------------------------------
 
     private class ClientHandler implements Runnable {
         private Socket clientSocket;
-        private PrintWriter writer;
+        private String writer;
+       
 
-        public ClientHandler(Socket clientSocket, PrintWriter writer) {
+//        public ClientHandler(Socket clientSocket, PrintWriter writer) {
+//            this.clientSocket = clientSocket;
+//            this.writer = writer;
+//        }
+        
+        public ClientHandler(Socket clientSocket, String writer) {
             this.clientSocket = clientSocket;
             this.writer = writer;
         }
 
         
-        @Override
+
+
+		@Override
         public void run() {
             try {
                 Scanner scanner = new Scanner(clientSocket.getInputStream());
@@ -121,8 +144,8 @@ public class ServidorControlador {
                 }
 
                 clientSocket.close();
-                mostrarMensaje("desconetado cliente");
-                guardarClientes.remove(writer);
+                mostrarMensaje("desconectado cliente");
+                guardarUsuarios.remove(writer);
             } catch (IOException e) {
                 e.printStackTrace();
             
