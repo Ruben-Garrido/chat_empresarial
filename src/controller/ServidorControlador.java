@@ -62,7 +62,8 @@ public class ServidorControlador {
 
                 PrintWriter writer = new PrintWriter(clienteSocket.getOutputStream(), true);
                 guardarClientes.add(writer);
-
+                System.out.println("Se guardo el cliente");
+                
                 ClientHandler clientHandler = new ClientHandler(clienteSocket, writer);
                 executorService.execute(clientHandler);
             }
@@ -105,6 +106,7 @@ public class ServidorControlador {
             this.writer = writer;
         }
 
+        
         @Override
         public void run() {
             try {
